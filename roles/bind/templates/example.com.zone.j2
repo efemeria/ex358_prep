@@ -1,0 +1,13 @@
+$TTL 3D
+@	IN SOA	dns.example.com. admin.example.com. (
+					1	; serial
+					1D	; refresh
+					1H	; retry
+					1W	; expire
+					3H )	; minimum
+
+	IN NS dns.example.com.
+	IN NS localhost.
+main    IN A  10.0.0.0
+main    IN AAAA 2001:db8:3333:4444:5555:6666:7777:8888
+ipv6    IN AAAA 2001:db8:3333:4444:5555:6666:7777:8888

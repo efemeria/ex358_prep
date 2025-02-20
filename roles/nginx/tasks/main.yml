@@ -1,0 +1,51 @@
+---
+- name: Install Nginx
+  package:
+    name: nginx
+    state: latest
+
+- name: Allow http/https through the firewall
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    state: enabled
+    permanent: true
+    immediate: true
+  with_items:
+    - https
+    - http
+
+- name: Configure nginx.conf
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+
+- name: Create website.conf
+  template: 
+    src: website.conf.j2
+    dest: /etc/nginx/conf.d/website.conf
+
+- name: Ensure website directory exists
+  file:
+    path: /var/www/website/
+    owner: nginx
+    group: nginx
+    state: directory
+
+- name: Apply correct Selinux context to website dir
+  command: semanage fcontext -a -t httpd_sys_content_t "/var/www/website(/.*)?"
+
+- name: Load correct Selinux context of website dir
+  command: restorecon -Rv /var/www/website/
+
+- name: Upload index.html
+  template:
+    src: index.html.j2
+    dest: /var/www/website/index.html
+    owner: nginx
+    group: nginx
+
+- name: Start and enable nginx service
+  service:
+    name: nginx
+    state: started
+    enabled: yes

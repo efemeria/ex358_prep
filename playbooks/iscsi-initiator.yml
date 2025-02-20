@@ -1,0 +1,55 @@
+- hosts: testservers
+  gather_facts: no
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: Install required utilities
+      package:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - targetcli
+        - iscsi-initiator-utils
+
+    - name: Set initiator name
+      copy:
+        dest: "/etc/iscsi/initiatorname.iscsi"
+        content: "InitiatorName=iqn.2025-02.com.example:initiator01"
+
+    - name: Start services
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      with_items:
+        - iscsi
+        - iscsid
+
+    - name: Restart in case name was changed
+      service:
+        name: iscsid
+        state: restarted
+
+    - name: Get portal information
+      command: iscsiadm -m discovery -t st -p 10.0.0.0:3260
+
+    - name: Connect to target
+      command: iscsiadm -m node -T iqn.2025-02.com.example:target01 -p 10.0.0.0:3260 -l
+
+    - name: Ensure connection persists across boots
+      command: iscsiadm -m node -T iqn.2025-02.com.example:target01 -p 10.0.0.0:3260 --op update -n node.startup -v automatic
+
+    - name: Create directory for mount
+      file:
+        path: /iscsi_data/
+        state: directory
+        mode: '0755'
+
+#    - name: Partition the data
+#      command: mkfs.xfs /dev/sdc
+
+#    - name: Mount data
+#      command: mount /dev/sdc /iscsi_data/
+
+# In case persistent mount is needed use lineinfile module on /etc/fstab or mount module

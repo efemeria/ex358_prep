@@ -1,0 +1,26 @@
+- hosts: testservers
+  gather_facts: no
+  become: yes
+
+  tasks:
+
+    - name: Install Cups
+      package:
+        name: cups
+        state: latest
+
+    - name: Add required services to the firewall
+      ansible.posix.firewalld:
+        service: "{{ item }}"
+        state: enabled
+        permanent: true
+        immediate: true
+      with_items:
+        - ipp
+        - mdns
+
+    - name: Start and enable Cups
+      service:
+        name: cups
+        enabled: yes
+        state: started

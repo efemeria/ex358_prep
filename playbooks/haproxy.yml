@@ -1,0 +1,8 @@
+- hosts: testservers
+  become: yes
+  become_method: sudo
+
+  roles:
+    # configure two sites with nginx
+    #- nginx
+    - haproxy

@@ -1,0 +1,19 @@
+---
+- name: Install Haproxy
+  package:
+    name: haproxy
+    state: latest
+
+- name: Upload Haproxy config
+  template: 
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+
+- name: Set haproxy boolean
+  command: setsebool -P haproxy_connect_any yes
+
+- name: Start and enable haproxy service
+  service:
+    name: haproxy
+    state: started
+    enabled: yes

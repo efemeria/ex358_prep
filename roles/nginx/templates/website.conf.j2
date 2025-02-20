@@ -1,0 +1,17 @@
+    server {
+        listen       80;
+        listen       [::]:80;
+        server_name  website.com;
+        root         /var/www/website;
+
+#        ssl_certificate "/etc/pki/tls/certs/example.crt";
+#        ssl_certificate_key "/etc/pki/tls/private/example.key";
+#        ssl_session_cache shared:SSL:1m;
+#        ssl_session_timeout  10m;
+#        ssl_ciphers PROFILE=SYSTEM;
+#        ssl_prefer_server_ciphers on;
+
+        expires 30d;
+        add_header Cache-Control "Public";
+        access_log off;
+        }

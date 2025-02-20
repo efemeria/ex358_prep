@@ -1,0 +1,8 @@
+---
+- name: Install and configure Mysql server (Postgresql)
+  hosts: testservers
+  become: yes
+  become_method: sudo
+
+  roles:
+    - mysql

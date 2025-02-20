@@ -1,0 +1,38 @@
+---
+- name: Install DHCPD
+  package:
+    name: dhcp-server
+    state: latest
+
+- name: Allow required services through the firewall
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    state: enabled
+    permanent: true
+    immediate: true
+  with_items:
+    - dhcp
+    - dhcpv6
+    - dhcpv6-client
+
+- name: Upload IPv4 DHCPD config
+  template:
+    src: dhcpd.conf.j2
+    dest: /etc/dhcp/dhcpd.conf
+
+- name: Upload IPv6 DHCPD config
+  template:
+    src: dhcpd6.conf.j2
+    dest: /etc/dhcp/dhcpd6.conf
+
+- name: Enable and start DHCPD service
+  service:
+    name: dhcpd
+    enabled: yes
+    state: started
+
+- name: Enable and start IPv6 DHCPD service
+  service:
+    name: dhcpd6
+    enabled: yes
+    state: started

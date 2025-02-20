@@ -1,0 +1,12 @@
+<Directory "/var/www/website2">
+    AllowOverride None
+    Require all granted
+</Directory>
+
+<VirtualHost *:443>
+    DocumentRoot "/var/www/website2"
+    ServerName example.com
+    ServerAlias www.example.com
+    ErrorLog "/var/log/httpd/example.com-error_log"
+    CustomLog "/var/log/httpd/example.com-access_log" common
+</VirtualHost>

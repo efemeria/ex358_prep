@@ -1,0 +1,22 @@
+- hosts: testservers
+  gather_facts: yes
+  become: yes
+  become_method: sudo
+  
+  vars:
+    network_connections:
+      - name: ens18
+        type: ethernet
+        state: up
+        ip:
+          dhcp4: no
+          route_metric4: 100
+          address:
+            - 10.0.0.0/24
+          gateway4: 10.0.0.1
+          dns:
+            - 1.1.1.1
+            - 1.0.0.1
+
+  roles:
+    - rhel-system-roles.network

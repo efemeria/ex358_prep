@@ -1,0 +1,71 @@
+---
+- name: Install Mariadb
+  command: dnf install @mariadb -y
+
+- name: Install PyMySql
+  package:
+    name: python3-PyMySQL
+    state: latest
+
+- name: Allow Mariadb through the firewall
+  ansible.posix.firewalld:
+    service: mysql
+    state: enabled
+    permanent: true
+    immediate: true
+
+- name: Start and enable Mariadb
+  service:
+    name: mariadb
+    enabled: True
+    state: started
+
+- name: Set root password
+  community.mysql.mysql_user:
+    name: root
+    host: localhost
+    password: password
+    login_unix_socket: /var/lib/mysql/mysql.sock
+  
+- name: Copy user and password
+  template:
+    src: my.cnf.j2
+    dest: /root/.my.cnf
+
+- name: Delete anon user
+  community.mysql.mysql_user:
+    name: ''
+    host: localhost
+    state: absent
+
+- name: Create a new DB
+  community.mysql.mysql_db:
+    name:
+      - testdb
+    state: present
+
+- name: Create a new user
+  community.mysql.mysql_user:
+    name: testuser
+    password: password
+    host: localhost
+    priv: 
+      'testdb.*': 'ALL,GRANT'
+    state: present
+
+- name: Copy data file into tmp dir
+  template:
+    src: insert.sql.j2
+    dest: /tmp/insert.sql
+
+- name: Insert data into DB
+  community.mysql.mysql_db:
+    name: testdb
+    state: import
+    target: /tmp/insert.sql
+
+- name: Create a backup
+  community.mysql.mysql_db:
+    state: dump
+    name: all
+    target: /tmp/dump.sql

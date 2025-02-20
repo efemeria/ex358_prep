@@ -1,0 +1,15 @@
+- hosts: testservers
+  become: yes
+  become_method: sudo
+  
+  vars:
+    firewall:
+      - service: [http, https]
+        state: enabled
+      - port: 80/tcp
+        state: enabled
+      - rich_rule: rule family=ipv4 source address=10.0.0.0/32 port port=144 protocol=tcp accept
+        state: enabled
+
+  roles:
+    - rhel-system-roles.firewall

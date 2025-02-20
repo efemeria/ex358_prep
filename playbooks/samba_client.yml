@@ -1,0 +1,41 @@
+- hosts: testservers
+  gather_facts: no
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: Install packages
+      package:
+        name: "{{ item }}"
+        state: latest
+      loop:
+        - samba-client
+        - cifs-utils
+
+    - name: Allow through the firewall
+      firewalld:
+        service: samba-client
+        state: enabled
+        permanent: true
+        immediate: true
+
+    - name: Create credentials file
+      copy:
+        dest: /tmp/credentials.txt
+        content: "username=sambatestuser\npassword=password\n"
+        group: root
+        owner: root
+
+    - name: Create directory for mount
+      file:
+        path: /mnt/smb_share/
+        state: directory
+
+    - name: Perform a multiuser mount
+      mount:
+       src: //10.0.0.0/testconfig/
+       path: /mnt/smb_share/
+       opts: "credentials=/tmp/credentials.txt,multiuser"
+       opts_no_log: true
+       fstype: cifs
+       state: mounted

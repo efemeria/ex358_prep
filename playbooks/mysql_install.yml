@@ -1,0 +1,25 @@
+---
+- name: Install and configure Mysql server (Postgresql)
+  hosts: testservers
+  become: yes
+  become_method: sudo
+  vars:
+    postgresql_version: "13"
+    postgresql_password: "password"
+    postgresql_pg_hba_conf:
+      - type: local
+        database: all
+        user: all
+        auth_method: peer
+      - type: host
+        database: all
+        user: all
+        address: '127.0.0.1/32'
+        auth_method: ident
+      - type: host
+        database: all
+        user: all
+        address: '::1/128'
+        auth_method: ident
+  roles:
+    - rhel-system-roles.postgresql

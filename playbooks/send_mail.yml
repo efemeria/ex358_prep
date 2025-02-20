@@ -1,0 +1,13 @@
+# make sure to install community modules before this: ansible-galaxy collection install community.general
+- hosts: testservers
+  become: yes
+  gather_facts: yes
+
+  tasks:
+    - name: Sending an e-mail using the remote machine, not the Ansible controller node
+      mail:
+        host: localhost
+        port: 25
+        to: Example Server <server@example.com>
+        subject: Ansible-report
+        body: System {{ ansible_hostname }} has been successfully provisioned.

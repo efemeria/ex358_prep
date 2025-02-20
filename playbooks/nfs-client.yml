@@ -1,0 +1,25 @@
+- hosts: testservers
+  gather_facts: no
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: Install NFS utils
+      package:
+        name: nfs-utils
+        state: latest
+
+    - name: Make a directory for mount
+      file:
+        state: directory
+        path: /nfs_client_data/
+
+    - name: Mount the directory
+      command: mount -t nfs 10.0.0.0:/nfs_share/ /nfs_client_data/
+
+    - name: Mount using fstab
+      mount:
+        path: /nfs_client_data/
+        src: 10.0.0.0:/nfs_share/
+        state: mounted
+        fstype: nfs

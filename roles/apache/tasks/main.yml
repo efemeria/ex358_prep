@@ -1,0 +1,71 @@
+---
+- name: Install Apache
+  package:
+    name: httpd
+    state: latest
+
+- name: Install Mod_ssl
+  package:
+    name: mod_ssl
+    state: latest
+
+- name: Allow http/https through the firewall
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    state: enabled
+    permanent: true
+    immediate: true
+  with_items:
+    - https
+    - http
+
+- name: Ad example.com entry to /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    search_string: '127.0.0.1'
+    line: 127.0.0.1 localhost example.com
+    owner: root
+    group: root
+    mode: '0644'
+  tags: hosts
+
+- name: Configure httpd.conf
+  template:
+    src: httpd.conf.j2
+    dest: /etc/httpd/conf/httpd.conf
+
+- name: Configure ssl.conf
+  template:
+    src: ssl.conf.j2
+    dest: /etc/httpd/conf.d/ssl.conf
+
+- name: Create website.conf
+  template: 
+    src: website.conf.j2
+    dest: /etc/httpd/conf.d/website.conf
+
+- name: Ensure website directory exists
+  file:
+    path: /var/www/website2/
+    owner: apache
+    group: apache
+    state: directory
+
+- name: Apply correct Selinux context to website dir
+  command: semanage fcontext -a -t httpd_sys_content_t "/var/www/website2(/.*)?"
+
+- name: Load correct Selinux context of website dir
+  command: restorecon -Rv /var/www/website2/
+
+- name: Upload index.html
+  template:
+    src: index.html.j2
+    dest: /var/www/website2/index.html
+    owner: nginx
+    group: nginx
+
+- name: Start and enable httpd service
+  service:
+    name: httpd
+    state: started
+    enabled: yes

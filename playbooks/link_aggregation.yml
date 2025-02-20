@@ -1,0 +1,37 @@
+- hosts: testservers
+  gather_facts: yes
+  become: yes
+  become_method: sudo
+  
+  vars:
+    network_connections:
+      - name: team0
+        state: up
+        type: team
+        interface_name: team0
+        autoconnect: true
+        autoconnect_retries: 2
+        ip:
+          address:
+            - 1.0.0.0/24
+            - 2001:db8::23/64
+          gateway4: 1.0.0.1
+          dns:
+            - 1.1.1.1
+            - 1.0.0.1
+
+      - name: member1
+        state: up
+        type: ethernet
+        interface_name: eth1
+        controller: team0
+
+      - name: member2
+        state: up
+        type: ethernet
+        interface_name: eth2
+        controller: team0
+    network_allow_restart: True
+
+  roles:
+    - rhel-system-roles.network

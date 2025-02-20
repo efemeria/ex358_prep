@@ -1,0 +1,22 @@
+- hosts: testservers
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: Install Bind
+      package:
+        name: bind
+        state: latest
+
+    - name: Allow DNS through the firewall
+      ansible.posix.firewalld:
+        service: dns
+        state: enabled
+        permanent: true
+        immediate: true
+
+    - name: Start and enable bind service
+      service:
+        name: named
+        enabled: True
+        state: started

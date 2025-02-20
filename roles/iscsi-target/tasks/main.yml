@@ -1,0 +1,33 @@
+---
+- name: Install target service
+  package:
+    name: targetcli
+    state: latest
+
+- name: Allow through the firewall
+  firewalld:
+    service: iscsi-target
+    state: enabled
+    permanent: true
+    immediate: true
+
+- name: Enable Target service
+  service:
+    name: target
+    state: started
+    enabled: True
+
+- name: Create backstore
+  command: targetcli backstores/fileio create test_file /tmp/test.png 1G 
+
+- name: Create IQN
+  command: targetcli iscsi/ create iqn.2025-02.com.example:target01
+
+- name: Create LUN
+  command: targetcli iscsi/iqn.2025-02.com.example:target01/tpg1/luns create /backstores/fileio/test_file
+
+- name: create ACL
+  command: targetcli iscsi/iqn.2025-02.com.example:target01/tpg1/acls create iqn.2025-02.com.example:initiator01
+
+- name: Save configuration
+  command: targetcli saveconfig

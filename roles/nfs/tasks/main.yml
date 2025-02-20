@@ -1,0 +1,34 @@
+---
+- name: Install NFS utilities
+  package:
+    name: nfs-utils
+    state: latest
+
+- name: Add exports file
+  template:
+    src: exports.j2
+    dest: /etc/exports
+
+- name: Add firewall rules
+  firewalld:
+    service: nfs
+    state: enabled
+    permanent: true
+    immediate: true
+
+- name: Create a directory for share
+  file:
+    path: /nfs_share/
+    state: directory
+
+- name: Apply correct context for the directory
+  command: semanage fcontext -a -t nfs_t "/nfs_share(/.*)?"
+
+- name: Restore context
+  command: restorecon -Rv /nfs_share/
+
+- name: Start NFS service
+  service:
+    name: nfs-server
+    state: started
+    enabled: True

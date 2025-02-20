@@ -1,0 +1,58 @@
+---
+- name: Install samba
+  package:
+    name: "{{ item }}"
+    state: latest
+  loop:
+    - samba
+    - cifs-utils
+
+- name: Allow Samba through the firewall
+  firewalld:
+    service: samba
+    state: enabled
+    permanent: true
+    immediate: true
+
+- name: Upload Samba config
+  template:
+    src: smb.conf.j2
+    dest: /etc/samba/smb.conf
+
+- name: Create admins group
+  group:
+    name: "admins"
+    system: yes
+    state: present
+
+- name: Create directory for share
+  file:
+    path: /samba_share/
+    state: directory
+    group: admins
+
+- name: Apply correct SELinux context
+  command: semanage fcontext -a -t samba_share_t "/samba_share(/.*)?"
+
+- name: Restore context
+  command: restorecon -Rv /samba_share/
+
+- name: Create samba user
+  user:
+    name: "sambatestuser"
+    shell: "/sbin/nologin"
+    create_home: no
+    system: yes
+    groups: admins
+    append: yes
+
+- name: Set password for samba user
+  command: smbpasswd -a -s sambatestuser
+  args:
+    stdin: "password\npassword"
+
+- name: Start and enable Samba service
+  service:
+    name: smb
+    state: started
+    enabled: yes

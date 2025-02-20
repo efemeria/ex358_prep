@@ -1,0 +1,16 @@
+- name: Install and configure Postfix relay
+  hosts: testservers
+  become: yes
+  become_method: sudo
+  vars:
+    postfix_conf:
+      relayhost: example.com
+      mydestination: ' '
+      myorigin: otherexample.com
+      mynetworks: 127.0.0.0/8
+      inet_protocols: ipv4
+      local_transport: 'error: no local delivery'
+      inet_interfaces: loopback-only
+    postfix_manage_firewall: True
+  roles:
+    - rhel-system-roles.postfix

@@ -1,0 +1,30 @@
+- hosts: testservers
+  become: yes
+  become_method: sudo
+  
+  vars:
+    selinux_policy: targeted
+    selinux_state: enforcing
+    selinux_booleans:
+      - name: samba_enable_home_dirs
+        state: true
+      - name: haproxy_connect_any
+        state: true
+        persistent: true
+    selinux_fcontexts:
+      - target: '/tmp/test_dir(/.*)?'
+        setype: user_home_dir_t
+        ftype: d
+        state: present
+    selinux_restore_dirs:
+      - /tmp/test_dir
+
+  pre_tasks:
+    - name: Create a directory to change context to
+      ansible.builtin.file:
+        path: /tmp/test_dir
+        state: directory
+        mode: '0755'
+
+  roles:
+    - rhel-system-roles.selinux

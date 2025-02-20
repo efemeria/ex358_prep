@@ -1,0 +1,32 @@
+---
+- name: Install Bind
+  package:
+    name: bind
+    state: latest
+
+- name: Allow DNS through the firewall
+  ansible.posix.firewalld:
+    service: dns
+    state: enabled
+    permanent: true
+    immediate: true
+
+- name: Upload named.conf
+  template:
+    src: named.conf.j2
+    dest: /etc/named.conf
+
+- name: Upload zone files
+  template:
+    src: "{{ item }}.j2"
+    dest: "/var/named/{{ item }}"
+  with_items:
+    - example.com.zone
+    - ipv6.zone
+    - 10.0.0.zone
+
+- name: Start and enable bind service
+  service:
+    name: named
+    enabled: True
+    state: started
